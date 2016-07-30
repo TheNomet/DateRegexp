@@ -1,0 +1,164 @@
+import java_cup.runtime.*;
+import java.io.*;
+import java.util.*;
+
+init with {:
+    sym_table = new Hashtable();
+    
+:};
+
+parser code {:
+	public Hashtable <String, String> sym_table;
+    
+    public Object stack(int position){
+    	return (((Symbol)stack.elementAt(tos+position)).value);
+    }
+:};
+
+/** Terminal symbols **/
+
+terminal EQ,SEP,S,C,RO,RC,SO,SC,GO,GC,PLUS,MINUS,PIPE,END,MUL,DOL;
+terminal String ID,INT;
+terminal Integer ODD,EVEN,ALL;
+
+
+/** Non Terminal symbols **/
+non terminal start_sym;
+non terminal String instructionl,negpart;
+non terminal String expl, expl1, exp;
+non terminal Integer NT0, NT1, NT2,NT3;
+
+start with start_sym;
+
+/***** Grammar rules *****/
+
+
+start_sym ::= ODD negpart:neg instructionl:last END 
+				{:
+					String y = parser.sym_table.get(last);
+					String negs = parser.sym_table.get(neg);
+					if( negs != "empty"){
+						System.out.println("neg="+negs);
+						System.out.println("pos"+"="+y);
+					}
+					else System.out.println(last+"="+y);
+					
+				:}
+			| EVEN negpart:neg instructionl:last END 
+				{:
+					String y = parser.sym_table.get(last);
+					String negs = parser.sym_table.get(neg);
+					if( negs != "empty"){
+						System.out.println("neg="+negs);
+						System.out.println("pos"+"="+y);
+					}
+					else System.out.println(last+"="+y);
+				:}
+			| ALL negpart:neg instructionl:last END 
+				{:
+					String y = parser.sym_table.get(last);
+					String negs = parser.sym_table.get(neg);
+					if( negs != "empty"){
+						System.out.println("neg="+negs);
+						System.out.println("pos"+"="+y);
+					}
+					else System.out.println(last+"="+y);
+				:}
+
+;
+
+instructionl ::= instructionl ID:x EQ NT0 expl:y S 
+					{:
+						parser.sym_table.put(x,y);
+						RESULT = x;
+					:}
+				| ID:x EQ NT2 expl:y S  
+					{:
+						parser.sym_table.put(x,y);
+						RESULT = x;
+					:}
+;
+
+NT2 ::= 
+	{:
+		RESULT = (Integer) parser.stack(-3);//0 even - 1 odd
+	:}
+;
+
+NT0 ::= 
+	{:
+		RESULT = (Integer) parser.stack(-4);//0 even - 1 odd
+		//System.out.println(RESULT);
+	:}
+;
+
+expl ::= expl:res NT1 exp:x 
+			{:
+				res+=x;	
+				RESULT = res;
+			:}
+		| exp:x
+			{:RESULT = x;:}
+;
+NT1 ::= 
+	{: 
+		RESULT = (Integer) parser.stack(-1);//0 even - 1 odd
+	:}
+;
+
+exp ::= INT:x
+			{:RESULT = x;:}
+		| GO ID:x GC
+			{:RESULT = parser.sym_table.get(x);:}
+		| SO INT:x MINUS INT:y SC
+			{:RESULT = "["+x+"-"+y+"]";:}
+		| DOL INT:x MINUS INT:y DOL
+			{:
+				Integer odd = (Integer) parser.stack(-5);
+				RESULT = "[";
+				int i;
+				int from = Integer.parseInt(x);
+				int to = Integer.parseInt(y);
+				if(odd==1){//only odd numbers
+					if(from%2==0) from++;
+					for( i = from; i <= to; i+=2){
+						RESULT+=""+i;
+					}		
+					RESULT +="]";
+				}
+				else if(odd==0){//only even numbers
+					if(from%2==1) from++;
+					for( i = from; i <= to; i+=2){
+						RESULT+=""+i;
+					}		
+					RESULT +="]";				
+				}
+				else{ //all numbers
+					RESULT += ""+x+"-"+y+"]";
+				}
+
+			:}
+		| RO NT1 expl:x RC
+			{:RESULT = "("+x+")";:}
+		| exp:x GO INT:y GC
+			{:RESULT = x+"{"+y+"}";:}
+		| exp:x GO INT:y C INT:z GC
+			{:RESULT = x+"{"+y+","+z+"}";:}
+		| exp:x PIPE exp:y 
+			{:RESULT = x+"|"+y;:}
+;
+
+
+negpart ::=  SEP instructionl:neg SEP
+				{:
+					//parser.sym_table.put("neg",neg);
+					RESULT = neg;
+				:}
+			| 	{:
+					parser.sym_table.put("neg","empty");
+					RESULT = "neg";
+				:}
+;
+
+
+

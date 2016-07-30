@@ -37,6 +37,21 @@
 *~
 .*~
 
+regexp/Yylex.*
+regexp/regexp
+regexp/input.*
+regexp/parser.cup~
+regexp/parser.java
+regexp/scanner.jflex~
+regexp/sym.java
+regexp/utils
+
+regexp/fortest/Yylex.*
+regexp/fortest/test.txt
+regexp/fortest/scanner.jflex
+regexp/fortest/scanner.jflex~
+regexp/fortest/partial.jflex~
+
 # -----------JAVA
 *.class
 
