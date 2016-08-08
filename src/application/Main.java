@@ -37,12 +37,15 @@ public class Main extends Application {
         ChoiceBox<String> format = (ChoiceBox<String>) scene.lookup("#format");
         
         format.setItems(FXCollections.observableArrayList("YY/MM/DD","DD/MM/YY"));
+        format.getSelectionModel().selectFirst();
         
         ChoiceBox<String> separator = (ChoiceBox<String>) scene.lookup("#separator");
         
         separator.setItems(FXCollections.observableArrayList("-","/",":"));
+        separator.getSelectionModel().selectFirst();
         
         init();
+       
         
         stage.setTitle("FXML Welcome");
         stage.setScene(scene);
