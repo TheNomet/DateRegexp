@@ -24,7 +24,6 @@ public class Main extends Application {
         Scene scene = new Scene(root, 500, 700);
         
         ColumnConstraints c1 = new ColumnConstraints(60);
-        ColumnConstraints c2 = new ColumnConstraints(100);
         GridPane gp = (GridPane) scene.lookup("#grid");
         gp.getColumnConstraints().add(c1);
         gp.getColumnConstraints().add(c1);
@@ -34,17 +33,20 @@ public class Main extends Application {
         ta.setEditable(false);
         
         
-        ChoiceBox<String> format = (ChoiceBox<String>) scene.lookup("#format");
+        @SuppressWarnings("unchecked")
+		ChoiceBox<String> format = (ChoiceBox<String>) scene.lookup("#format");
         
         format.setItems(FXCollections.observableArrayList("YY/MM/DD","DD/MM/YY"));
         format.getSelectionModel().selectFirst();
         
-        ChoiceBox<String> separator = (ChoiceBox<String>) scene.lookup("#separator");
+        @SuppressWarnings("unchecked")
+		ChoiceBox<String> separator = (ChoiceBox<String>) scene.lookup("#separator");
         
         separator.setItems(FXCollections.observableArrayList("-","/",":"));
         separator.getSelectionModel().selectFirst();
         
-        ChoiceBox<String> even = (ChoiceBox<String>) scene.lookup("#even");
+        @SuppressWarnings("unchecked")
+		ChoiceBox<String> even = (ChoiceBox<String>) scene.lookup("#even");
         
         even.setItems(FXCollections.observableArrayList("normal","even","odd"));
         even.getSelectionModel().selectFirst();

@@ -60,6 +60,7 @@ regexp/fortest/partial.jflex~
 
 # Package Files #
 *.jar
+!DateRegexp.jar
 *.war
 *.ear
 

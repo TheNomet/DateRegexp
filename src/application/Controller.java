@@ -6,7 +6,6 @@ import java.util.HashMap;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -47,7 +46,12 @@ public class Controller {
 	
 	ArrayList<Integer> alreadyPresentDayRegExp = new ArrayList<>();
 	
-	 HashMap<Integer,Integer> month_day = new HashMap<Integer,Integer>(){{
+	 HashMap<Integer,Integer> month_day = new HashMap<Integer,Integer>(){/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+	{
 		 	put(1, 31);
 			put(2, 28);
 			put(3, 31);
@@ -127,8 +131,6 @@ public class Controller {
 		String tmm = new String(toMM.getText());
 		String tdd = new String(toDD.getText());
 		
-		ArrayList<String> exceptions;
-		
 		String empty = new String("");
 		String solution = "";
 		
@@ -151,7 +153,6 @@ public class Controller {
 				Integer td = Integer.parseInt(tdd);
 				
 				if(fyy.equals(tyy)){//on the same year
-					String year = fyy;
 					evaluateYear(fy, new ArrayList<>(), fm, tm, fd, td, excMap);
 					
 				}
@@ -173,7 +174,6 @@ public class Controller {
 						regexpUNIQUE=Integer.toString(unique++);
 						evaluateYear(fy, new ArrayList<>(), fm, 12, fd, 31, excMap);
 						String partial = result.getText();
-						int start = fy+1;
 						ArrayList<Integer> years = new ArrayList<>();
 						for(i=fy+1;i<=ty-1;i++){
 							if(!excMap.containsKey(i))
@@ -225,7 +225,7 @@ public class Controller {
 		HashMap<Integer, String> excSol = new HashMap<>();
 		ArrayList<Integer> earr; //array to store temporary the exceptions for a month
 		
-		int dim,flag;
+		int dim;
 		int i,j;
 		int tday,fday;
 		int cs; //0 even - 1 odd - >1 normal
