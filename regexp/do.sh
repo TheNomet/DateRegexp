@@ -27,7 +27,7 @@ elif [ $# -eq 4 ]; then #only odd or even
 	fi
 fi
 mkdir utils 2> /dev/null
-gcc -o utils/regexp regexp.c
+gcc -o ./utils/regexp regexp.c
 to=$1
 if [ $1 -lt 0 ]; then #<0
 	echo "//-----------//" >> input.txt	

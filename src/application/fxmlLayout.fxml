@@ -78,11 +78,10 @@
 	<!-- result -->
 	<Button onAction="#Eval" text="Eval" GridPane.columnIndex="0" GridPane.rowIndex="13" />
 	
-	<ScrollPane GridPane.columnIndex="0" GridPane.columnSpan="7" GridPane.rowIndex="14">
-		<TextArea fx:id="result" /> 
-	</ScrollPane>
-   <CheckBox fx:id="feb" mnemonicParsing="false" GridPane.columnIndex="7" GridPane.rowIndex="5" />
-   <Label text="Feb 28d" GridPane.columnIndex="6" GridPane.rowIndex="5" />
+	<TextArea  fx:id="result" GridPane.columnIndex="0" GridPane.columnSpan="9" GridPane.rowIndex="14"/>
+	
+   <ChoiceBox fx:id="even" GridPane.columnIndex="7" GridPane.rowIndex="5" />
+   <Label text="Even/odd" GridPane.columnIndex="6" GridPane.rowIndex="5" />
 	
    <padding>
       <Insets bottom="10.0" left="10.0" right="10.0" top="0" />

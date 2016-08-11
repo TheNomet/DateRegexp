@@ -33,7 +33,9 @@ public class Controller {
 	@FXML private TextArea result;
 	@FXML private ChoiceBox<String> format;
 	@FXML private ChoiceBox<String> separator;
-	@FXML private CheckBox feb;
+	@FXML private ChoiceBox<String> even;
+	
+	String regexpUNIQUE = "";
 	
 	/*
 	 * Integer = the year
@@ -42,6 +44,8 @@ public class Controller {
 	 * 				ArrayList = list of exception days
 	 * */
 	HashMap<Integer, HashMap<Integer,ArrayList<Integer>>> excMap =new HashMap<>();
+	
+	ArrayList<Integer> alreadyPresentDayRegExp = new ArrayList<>();
 	
 	 HashMap<Integer,Integer> month_day = new HashMap<Integer,Integer>(){{
 		 	put(1, 31);
@@ -85,17 +89,17 @@ public class Controller {
 		            );
 		        if(!excMap.containsKey(Integer.parseInt(eyy))){
 		        	excMap.put(Integer.parseInt(eyy), new HashMap<Integer,ArrayList<Integer>>());
-		        	System.out.println("created hashmap");
+		        	//System.out.println("created hashmap");
 		        
 		        }
 	        	if(excMap.get(Integer.parseInt(eyy)).containsKey(emm)){
-	        		System.out.println("adding to arr");
+	        		//System.out.println("adding to arr");
 	        		excMap.get(Integer.parseInt(eyy)).get(Integer.parseInt(emm)).add(Integer.parseInt(edd));
 	        	}
 	        	else{ 
 	        		excMap.get(Integer.parseInt(eyy)).put(Integer.parseInt(emm) , new ArrayList<Integer>());
 	        		excMap.get(Integer.parseInt(eyy)).get(Integer.parseInt(emm)).add(Integer.parseInt(edd));
-	        		System.out.println("creating arr"+excMap.get(Integer.parseInt(eyy)).get(Integer.parseInt(emm)));
+	        		//System.out.println("creating arr"+excMap.get(Integer.parseInt(eyy)).get(Integer.parseInt(emm)));
 	        	}
 		        
 		        
@@ -113,6 +117,8 @@ public class Controller {
 	
 	@FXML protected void Eval(ActionEvent event) {
 
+		alreadyPresentDayRegExp = new ArrayList<>();
+		
 		String fyy = new String(fromYY.getText());
 		String fmm = new String(fromMM.getText());
 		String fdd = new String(fromDD.getText());
@@ -124,6 +130,10 @@ public class Controller {
 		ArrayList<String> exceptions;
 		
 		String empty = new String("");
+		String solution = "";
+		
+		int i;
+		int unique=1;
 		
 		divisor="\""+separator.getValue()+"\"";
 		
@@ -131,22 +141,86 @@ public class Controller {
 				!tyy.equals(empty)&&!tmm.equals(empty)&&!tdd.equals(empty)){
 			if(fyy.matches("\\d+")&&fmm.matches("\\d+")&&fdd.matches("\\d+")&&
 					tyy.matches("\\d+")&&tmm.matches("\\d+")&&tdd.matches("\\d+")){
-		        System.out.println("im in");
+		        //System.out.println("im in");
+				Integer fy = Integer.parseInt(fyy);
+				Integer fm = Integer.parseInt(fmm);
+				Integer fd = Integer.parseInt(fdd);
+				
+				Integer ty = Integer.parseInt(tyy);
+				Integer tm = Integer.parseInt(tmm);
+				Integer td = Integer.parseInt(tdd);
+				
 				if(fyy.equals(tyy)){//on the same year
 					String year = fyy;
-					evaluateYear(Integer.parseInt(fyy), Integer.parseInt(fmm), Integer.parseInt(tmm), Integer.parseInt(fdd), Integer.parseInt(tdd), excMap);
+					evaluateYear(fy, new ArrayList<>(), fm, tm, fd, td, excMap);
 					
 				}
 				else{
-					
+					if(ty==fy+1){
+						regexpUNIQUE="1";
+						evaluateYear(fy, new ArrayList<>(), fm, 12, fd, 31, excMap);
+						String partial = result.getText();
+						regexpUNIQUE="2";
+						evaluateYear(ty, new ArrayList<>(), 1, tm, 1, td, excMap);
+						partial+="\n\n"+result.getText();
+						solution = "date={date1}|{date2}";
+						result.setText(partial+"\n\n"+solution);
+					}
+					else if(ty>fy+1){
+						
+						ArrayList<Integer> bissextile = new ArrayList<>() ;
+						
+						regexpUNIQUE=Integer.toString(unique++);
+						evaluateYear(fy, new ArrayList<>(), fm, 12, fd, 31, excMap);
+						String partial = result.getText();
+						int start = fy+1;
+						ArrayList<Integer> years = new ArrayList<>();
+						for(i=fy+1;i<=ty-1;i++){
+							if(!excMap.containsKey(i))
+								if(bissextile(i))
+									bissextile.add(i);
+								else
+									years.add(i);
+							//System.out.println(i+" "+years.size()+" "+years.get(0));
+							else{
+								regexpUNIQUE=Integer.toString(unique++);
+								evaluateYear(i, new ArrayList<>(), 1, 12, 1, 31, excMap);
+								partial+="\n\n"+result.getText();
+							}
+							
+						}
+						if(!bissextile.isEmpty()){
+							regexpUNIQUE=Integer.toString(unique++);
+							evaluateYear(bissextile.remove(0), bissextile, 1, 12, 1, 31, excMap);
+							partial+="\n\n"+result.getText();
+						}
+						regexpUNIQUE=Integer.toString(unique++);
+						evaluateYear(years.remove(0), years, 1, 12, 1, 31, excMap);
+						partial+="\n\n"+result.getText();
+						regexpUNIQUE=Integer.toString(unique);
+						evaluateYear(ty, new ArrayList<>(), 1, tm, 1, td, excMap);
+						partial+="\n\n"+result.getText();
+						solution="date=";
+						for(i=1;i<=unique;i++)
+							solution += "{date"+i+"}|";
+						solution=solution.substring(0, solution.length()-1);
+						result.setText(partial+"\n\n"+solution);
+					}
 				}
+				
 			}
 		}
 		
     }
-	
-	
-	private void evaluateYear(int year, int fmm, int tmm, int fdd, int tdd, HashMap<Integer, HashMap<Integer,ArrayList<Integer>> > exc ){
+	/*
+	 *	year = the year for which evaluate the months
+	 * 	fmm = from month
+	 * 	tmm = to month
+	 *  fdd = from day
+	 *  tdd = to day
+	 *  HashMap = map containing exceptions
+	 */
+	private void evaluateYear(int year, ArrayList<Integer> yeararr, int fmm, int tmm, int fdd, int tdd, HashMap<Integer, HashMap<Integer,ArrayList<Integer>> > exc ){
 		HashMap<Integer, ArrayList<Integer>> partials = new HashMap<>();
 		HashMap<Integer, String> excSol = new HashMap<>();
 		ArrayList<Integer> earr; //array to store temporary the exceptions for a month
@@ -154,9 +228,17 @@ public class Controller {
 		int dim,flag;
 		int i,j;
 		int tday,fday;
-		int cs=2;
+		int cs; //0 even - 1 odd - >1 normal
+		
+		if(even.getValue().equals("normal"))
+			cs=2;
+		else if(even.getValue().equals("even"))
+			cs=0;
+		else 
+			cs=1;
+		
 		String solution = new String("");
-		if(fmm==tmm){
+		if(fmm==tmm&&yeararr.isEmpty()){
 			//only 1 month
 			if(exc.containsKey(year)&&exc.get(year).containsKey(fmm)){ 
 				//there is an exception for the given month of the given year
@@ -194,11 +276,23 @@ public class Controller {
 					solution+=eval(fdd, tdd, cs);
 			switch (format.getValue()) {
 			case "YY/MM/DD":
-				result.setText("month_day="+fmm+divisor+solution+"\ndate="+year+divisor+"{month_day}");
+				if(yeararr.isEmpty())
+					result.setText("month_day"+regexpUNIQUE+"="+fmm+divisor+solution+"\ndate"+regexpUNIQUE+"="
+								+year+divisor+"{month_day"+regexpUNIQUE+"}");
+				else{
+					String years=Integer.toString(year)+"|";
+					for(Integer y : yeararr){
+						if(y!=year)
+							years+=y+"|";
+					}
+					years=years.substring(0, years.length()-1);
+					result.setText("month_day"+regexpUNIQUE+"="+fmm+divisor+solution+"\ndate"+regexpUNIQUE+"="
+							+years+divisor+"{month_day"+regexpUNIQUE+"}");
+				}
 				break;
 				
 			case "DD/MM/YY":
-				result.setText("day_month="+solution+divisor+fmm+"\ndate="+"{day_month}"+divisor+year);
+				result.setText("day_month"+regexpUNIQUE+"="+solution+divisor+fmm+"\ndate"+regexpUNIQUE+"="+"{day_month"+regexpUNIQUE+"}"+divisor+year);
 				break;
 
 			default:
@@ -221,10 +315,10 @@ public class Controller {
 					fday=fdd;
 				
 				if(i==2){
-					if(feb.isSelected())//checked
-						tday=28;
-					else
+					if(bissextile(year))//checked
 						tday=29;
+					else
+						tday=28;
 				}
 			
 				if(exc.containsKey(year)&&exc.get(year).containsKey(i)){ 
@@ -241,7 +335,7 @@ public class Controller {
 								 solution+="|"+eval(fday,earr.get(j)-1,cs);
 						 }
 							 
-						 if(j+1<dim){//there is another exception laterù
+						 if(j+1<dim){//there is another exception later
 							 if(earr.get(j)+1<10)
 								 solution+="|0"+eval(earr.get(j)+1,earr.get(j+1)-1,cs);
 							 else
@@ -278,46 +372,75 @@ public class Controller {
 					partials.get(tday).add(i);
 				}
 			}
-			System.out.println(partials);
-			System.out.println(excSol);
+			//System.out.println(partials);
+			//System.out.println(excSol);
 			solution="";
-			for(Integer d : partials.keySet())
-				solution+="day"+d+"="+"0"+eval(1,d,cs)+"\n";
+			for(Integer d : partials.keySet()){
+				if(!alreadyPresentDayRegExp.contains(d)){
+					solution+="day"+d+"="+"0"+eval(1,d,cs)+"\n";
+					alreadyPresentDayRegExp.add(d);
+				}
+			}
 			switch (format.getValue()) {
 			case "YY/MM/DD":
-				solution+="month_day=";
+				solution+="month_day"+regexpUNIQUE+"=";
 				for(Integer d : partials.keySet()){
 					solution+="(";
 					for(Integer m : partials.get(d)){
 						solution+=m+"|";
 					}
-					solution=solution.substring(1, solution.length()-1);
+					solution=solution.substring(0, solution.length()-1);
 					solution+=")"+divisor+"{day"+d+"}|";
 					
 				}
 				for(Integer d : excSol.keySet()){
 					solution+=d+divisor+"("+excSol.get(d)+")"+"|";
 				}
-				solution=solution.substring(1, solution.length()-1)+"\nyear="+year+"\ndate={year}"+divisor+"{month_day}";
+				if(yeararr.isEmpty())
+					solution=solution.substring(0, solution.length()-1)+"\nyear"+regexpUNIQUE+"="+
+								year+"\ndate"+regexpUNIQUE+"={year"+regexpUNIQUE+"}"+divisor+"{month_day"+regexpUNIQUE+"}";
+				else{
+					String years=Integer.toString(year)+"|";
+					for(Integer y : yeararr){
+						if(y!=year)
+							years+=y+"|";
+					}
+					years=years.substring(0, years.length()-1);
+					solution=solution.substring(0, solution.length()-1)+"\nyear"+regexpUNIQUE+"="+
+							years+"\ndate"+regexpUNIQUE+"={year"+regexpUNIQUE+"}"+divisor+"{month_day"+regexpUNIQUE+"}";
+					
+				}
 				
 				break;
 				
 			case "DD/MM/YY":
-				solution+="day_month=";
+				solution+="day_month"+regexpUNIQUE+"=";
 				for(Integer d : partials.keySet()){
 					solution+="{day"+d+"}"+divisor+"(";
 					
 					for(Integer m : partials.get(d)){
 						solution+=m+"|";
 					}
-					solution=solution.substring(1, solution.length()-1);
+					solution=solution.substring(0, solution.length()-1);
 					solution+=")|";
 					
 				}
 				for(Integer d : excSol.keySet()){
 					solution+="("+excSol.get(d)+")"+divisor+d+"|";
 				}
-				solution=solution.substring(1, solution.length()-1)+"\nyear="+year+"\ndate={day_month}"+divisor+"{year}";
+				if(yeararr.isEmpty())
+					solution=solution.substring(0, solution.length()-1)+"\nyear"+regexpUNIQUE+"="+
+								year+"\ndate"+regexpUNIQUE+"={day_month"+regexpUNIQUE+"}"+divisor+"{year}";
+				else{
+					String years=Integer.toString(year)+"|";
+					for(Integer y : yeararr){
+						if(y!=year)
+							years+=y+"|";
+					}
+					years=years.substring(0, years.length()-1);
+					solution=solution.substring(0, solution.length()-1)+"\nyear"+regexpUNIQUE+"="+
+							years+"\ndate"+regexpUNIQUE+"={day_month"+regexpUNIQUE+"}"+divisor+"{year}";
+				}
 				
 				break;
 
@@ -369,5 +492,13 @@ public class Controller {
 		return "";
 		
 	}
-
+	
+	private boolean bissextile(int year){
+		if(year%100==0 && year%400!=0)
+			return false;
+		if(year%4==0)
+			return true;
+		return false;
+	}
 }
+	

@@ -98,11 +98,17 @@ int main(int argc, char **argv){
             from0[3]=argv[1][1]-'0';
             from0[0]=0;
         }
-        else {
+        else if(from<1000) {
             from0[1]=argv[1][0]-'0';
             from0[2]=argv[1][1]-'0';
             from0[3]=argv[1][2]-'0';
             from0[0]=0;
+        }
+        else{
+            from0[0]=argv[1][0]-'0';
+            from0[1]=argv[1][1]-'0';
+            from0[2]=argv[1][2]-'0';
+            from0[3]=argv[1][3]-'0';
         }
         min10000(from0,to0,0);
         free(to0);
@@ -168,6 +174,9 @@ void min100(int from[2], int to0[2],int zeronum, char *partialsolution){
     int i;
     int flag=1;
     if(from[0]>0 && from[0]<to0[0]){//from >= 10 && from < to0 ---> fill up partialf
+        if(from[1]==0)
+            from[0]=from[0]-1;
+        else
         if(from[1]<9){
             sprintf(partialf,"%d$%d-9$",from[0],from[1]);
         }
@@ -255,7 +264,7 @@ void min100(int from[2], int to0[2],int zeronum, char *partialsolution){
 		if zeronum==-2 -> in the result is also included the id of the regexp returned by min10
 */
 
-void min1000(int from[2], int to0[3], int zeronum){
+void min1000(int from[3], int to0[3], int zeronum){
     char solution[1024]="";
     char partialf[1024]="";
     char pp[1024]="";
@@ -263,6 +272,7 @@ void min1000(int from[2], int to0[3], int zeronum){
     int i;
     char n;
     int flag=0;
+    int multiple100=0;
 
     if(zeronum==0) n='s';
     else n='n';
@@ -290,7 +300,7 @@ void min1000(int from[2], int to0[3], int zeronum){
         int duo[2]={9,9};
         if(from[1]>0){//greater than 10
             if(to0[0]>from[0]){
-                min100(from+1,duo,-2,lower);		
+                min100(from+1,duo,-2,lower);
 			}
             else{
                 min100(from+1,to0+1,-2,lower);
@@ -299,11 +309,17 @@ void min1000(int from[2], int to0[3], int zeronum){
         }
         if(from[1]==0){//min than 10
             if(to0[0]>from[0]){//to 9 and then from 10 to 99
-                min10(from[2],9,0,lower1);
+                if(from[2]==0){
+                    from[0]--;
+                    multiple100=1;
+                }
+                else{
+                min10(from[2],9,1,lower1); // the one is used to put a 0 in front of [0-9] -> 0[0-9]
                 sprintf(lower,"|");
                 from[0]=1;
                 from[1]=0;
                 min100(from,duo,-2,lower);
+                }
             }
             else {//ex 124 166 ---> no need to call the second part
                 flag=1;
@@ -323,8 +339,10 @@ void min1000(int from[2], int to0[3], int zeronum){
         }
 		//printf("loew1 %s\n",lower1);
 		//printf("loew %s\n",lower);
-        sprintf(partialf,"%d(%s%s)",from[0],lower1,lower);
-        from[1]=from[2]=0;
+		if(!multiple100){
+            sprintf(partialf,"%d(%s%s)",from[0],lower1,lower);
+            from[1]=from[2]=0;
+        }
     }
 
 	//second part
@@ -378,34 +396,75 @@ void min10000(int from[4], int to0[4], int zeronum){
     int i;
     char pp[1024],pp1[1024],pp2[1024],pp3[1024];
 	char partial[1024],dec[1024];
+    int flag = 0;
+
     if(zeronum==0) n='s';
     else n='n';
 
     int trio[3]={9,9,9};
-    N=N+10;
-    sprintf(pp3,"{nXX%d}",N);
-    min1000(from+1,trio,-1);
-    N=N-10;
-
-    if(to0[0]>1){
-        if(to0[0]-1>=2)
-            sprintf(partial,"[1-%d][0-9]{2}$0-9$|%d",to0[0]-1,to0[0]);
-        else sprintf(partial,"1[0-9]{2}$0-9$|%d",to0[0]);
+    if(from[0]==0){//from<1000
+        N=N+10;
+        sprintf(pp3,"{nXX%d}",N);
+        min1000(from+1,trio,-1);
+        N=N-10;
+        from[0]=1;
+        from[1]=from[2]=from[3]=0;
+        flag=1;
     }
-    else sprintf(partial,"1");
+
+    if(to0[0]>from[0]){
+        if(to0[0]-1>=from[0]+1){
+
+            if(from[1]==0 && from[3]==0 && from[2]==0)
+                sprintf(partial,"[%d-%d][0-9]{2}$0-9$|%d",from[0],to0[0]-1,to0[0]);
+            else{
+                N=N+11;
+               // if(from[1]>0){
+                    if(to0[0]-1>from[0]+1)
+                        sprintf(partial,"%d({nXX%d})|[%d-%d][0-9]{2}$0-9$|%d",from[0],N,from[0]+1,to0[0]-1,to0[0]);
+                    else
+                        sprintf(partial,"%d({nXX%d})|%d[0-9]{2}$0-9$|%d",from[0],N,from[0]+1,to0[0]);
+                    min1000(from+1,trio,1);
+                //}
+                N=N-11;
+
+            }
+
+        }
+
+        else{
+            if(from[1]==0 && from[3]==0 && from[2]==0)
+                sprintf(partial,"%d([0-9]){2}$0-9$|%d",from[0],to0[0]);
+            else{
+                N=N+11;
+                sprintf(partial,"%d({nXX%d})|%d",from[0],N,to0[0]);
+                min1000(from+1,trio,1);
+                N=N-11;
+            }
+        }
+
+    }
+    else sprintf(partial,"%d",from[0]);
     if(to0[1]>0) {
         min1000(from+1,to0+1,1);
         sprintf(solution,"%s({nXX%d})",partial,N);
     }
     else if(to0[2]>0){
         min100(from+2,to0+2,1,NULL);
-        min10(0,9,2,NULL);
-        sprintf(solution,"%s({n%d}|{nX%d})",partial,N,N);
+        if(from[2]==0 && from[1]>0){
+            min10(0,9,2,NULL);
+            sprintf(solution,"%s({n%d}|{nX%d})",partial,N,N);
+        }
+        else
+            sprintf(solution,"%s({nX%d})",partial,N);
     }
     else if(to0[3]>0){
         min10(from[3],to0[3],2,NULL);
         sprintf(solution,"%s{n%d}",partial,N);
     }
     else sprintf(solution,"%s000",partial);
-    printf("nXXX%d = %s%s%s%s|%s;\n",N,pp,pp1,pp2,pp3,solution);
+    if(flag)
+        printf("nXXX%d = %s|%s;\n",N,pp3,solution);
+    else
+        printf("nXXX%d = %s;\n",N,solution);
 }

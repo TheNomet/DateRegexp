@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# a and b are used to test the number of errors
+
+# the test.txt file contains 20 numbers out of range, so at the end there must be 20 errors
+
+# this is done in order to test also a small range out of the one specified by the user, to make sure the 
+# regular expression is correct
+
+a=$1
+let "a -= 10"
+b=$2
+let "b += 10"
+
+#echo $a $b
 
 if [ $# -eq 3 ]; then
 	final="$(./do.sh $1 $2 num $3)"
@@ -10,6 +23,7 @@ else
 	exit
 fi
 
+#echo $final
 cd ./fortest
 
 touch test.txt 1> /dev/null 2> /dev/null
@@ -38,20 +52,21 @@ echo "
 //UTILS
 {nl}  				{;}
 {space} 			{;}
-. 					{System.out.println(\"error:\"+yytext());}
+.+ 					{System.out.println(\"error:\"+yytext());}
 //UTILS
 " >> scanner.jflex
 
 
-seq $1 $2 > test.txt
+seq $a $b > test.txt
 
 jflex scanner.jflex 1>/dev/null 
 javac Yylex.java 1>/dev/null 2>/dev/null
-java Yylex test.txt
+#java Yylex test.txt #remove the comment to show each number recognized
 errors="$(java Yylex test.txt | grep error | wc -l)"
-if [ $errors -gt 0 ]; then
-	echo "ERRORS found -> the regular expression wasn't correct"
-else 
+if [ $errors -eq 20 ]; then
 	echo "Everything is OK!"
+else 
+	echo "ERRORS found -> the regular expression wasn't correct"
+
 fi
  cd ..

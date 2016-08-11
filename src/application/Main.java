@@ -44,6 +44,11 @@ public class Main extends Application {
         separator.setItems(FXCollections.observableArrayList("-","/",":"));
         separator.getSelectionModel().selectFirst();
         
+        ChoiceBox<String> even = (ChoiceBox<String>) scene.lookup("#even");
+        
+        even.setItems(FXCollections.observableArrayList("normal","even","odd"));
+        even.getSelectionModel().selectFirst();
+        
         init();
        
         
