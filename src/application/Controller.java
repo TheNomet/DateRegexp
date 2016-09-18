@@ -4,37 +4,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-
-
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-
-
 
 public class Controller {
-	@FXML private TextArea exceptions;
-	@FXML private TextField eYY;
-	@FXML private TextField eMM;
-	@FXML private TextField eDD;
-	@FXML private TextField fromYY;
-	@FXML private TextField fromMM;
-	@FXML private TextField fromDD;
-	@FXML private TextField toYY;
-	@FXML private TextField toMM;
-	@FXML private TextField toDD;
-	@FXML private TextArea result;
-	@FXML private ChoiceBox<String> format;
-	@FXML private ChoiceBox<String> separator;
-	@FXML private ChoiceBox<String> even;
 	
 	String regexpUNIQUE = "";
+	String even="";
+	String format;
+	String separator;
 	
 	/*
 	 * Integer = the year
@@ -67,30 +45,32 @@ public class Controller {
 	 }};
 	
 	 String divisor;
+	 
+	 public void setEven(){
+		 even="even";
+	 }
+	 
+	 public void setNormal(){
+		 even="normal";
+	 }
+	 public void setOdd(){
+		 even="odd";
+	 }
+	 
+	 public void setFormat(String format){
+		 this.format=format;
+	 }
+	 
+	 public void setSeparator(String separator){
+		 this.separator=separator;
+	 }
 			 
-	@FXML protected void Add(ActionEvent event) {
-		
-		String eyy = new String(eYY.getText());
-		String emm = new String(eMM.getText());
-		String edd = new String(eDD.getText());
+	void Add(String eyy, String emm, String edd) {
 		
 		String empty = new String("");
 		
 		if(!eyy.equals(empty)&&!emm.equals(empty)&&!edd.equals(empty)){
 			if(eyy.matches("\\d+")&&emm.matches("\\d+")&&edd.matches("\\d+")){
-		        if(exceptions.getText().equals(empty))
-					exceptions.setText(
-							eyy+"/"+
-							emm+"/"+
-							edd
-			        );
-		        else 
-		    		exceptions.setText(
-		    				exceptions.getText()+"\n"+
-		    				eyy+"/"+
-		    				emm+"/"+
-		    				edd
-		            );
 		        if(!excMap.containsKey(Integer.parseInt(eyy))){
 		        	excMap.put(Integer.parseInt(eyy), new HashMap<Integer,ArrayList<Integer>>());
 		        	//System.out.println("created hashmap");
@@ -110,26 +90,16 @@ public class Controller {
 			}
 		}
 		
-		eYY.setText("");
-		eMM.setText("");
-		eDD.setText("");
+		
     }
 	
-	@FXML protected void Clear(ActionEvent event) {
-		exceptions.setText("");
-    }
 	
-	@FXML protected void Eval(ActionEvent event) {
+	
+	public String Eval(String fyy, String fmm, String fdd, String tyy, String tmm, String tdd) throws InterruptedException {
 
 		alreadyPresentDayRegExp = new ArrayList<>();
-		
-		String fyy = new String(fromYY.getText());
-		String fmm = new String(fromMM.getText());
-		String fdd = new String(fromDD.getText());
-		
-		String tyy = new String(toYY.getText());
-		String tmm = new String(toMM.getText());
-		String tdd = new String(toDD.getText());
+		String result="ERR Eval";
+
 		
 		String empty = new String("");
 		String solution = "";
@@ -137,12 +107,21 @@ public class Controller {
 		int i;
 		int unique=1;
 		
-		divisor="\""+separator.getValue()+"\"";
+//		System.out.println(fyy);
+//		System.out.println(fmm);
+//		System.out.println(fdd);
+//		System.out.println(tyy);
+//		System.out.println(tmm);
+//		System.out.println(tdd);
+		
+		divisor="\""+separator+"\"";
 		
 		if(!fyy.equals(empty)&&!fmm.equals(empty)&&!fdd.equals(empty)&&
 				!tyy.equals(empty)&&!tmm.equals(empty)&&!tdd.equals(empty)){
+				
 			if(fyy.matches("\\d+")&&fmm.matches("\\d+")&&fdd.matches("\\d+")&&
 					tyy.matches("\\d+")&&tmm.matches("\\d+")&&tdd.matches("\\d+")){
+					
 		        //System.out.println("im in");
 				Integer fy = Integer.parseInt(fyy);
 				Integer fm = Integer.parseInt(fmm);
@@ -153,28 +132,28 @@ public class Controller {
 				Integer td = Integer.parseInt(tdd);
 				
 				if(fyy.equals(tyy)){//on the same year
-					evaluateYear(fy, new ArrayList<>(), fm, tm, fd, td, excMap);
+					result=evaluateYear(fy, new ArrayList<Integer>(), fm, tm, fd, td, excMap);
 					
 				}
 				else{
 					if(ty==fy+1){
 						regexpUNIQUE="1";
-						evaluateYear(fy, new ArrayList<>(), fm, 12, fd, 31, excMap);
-						String partial = result.getText();
+						//MOD
+						String partial = evaluateYear(fy, new ArrayList<Integer>(), fm, 12, fd, 31, excMap);
 						regexpUNIQUE="2";
-						evaluateYear(ty, new ArrayList<>(), 1, tm, 1, td, excMap);
-						partial+="\n\n"+result.getText();
+						
+						partial+="\n\n"+evaluateYear(ty, new ArrayList<Integer>(), 1, tm, 1, td, excMap);
 						solution = "date={date1}|{date2}";
-						result.setText(partial+"\n\n"+solution);
+						result=partial+"\n\n"+solution;
 					}
 					else if(ty>fy+1){
 						
-						ArrayList<Integer> bissextile = new ArrayList<>() ;
+						ArrayList<Integer> bissextile = new ArrayList<Integer>() ;
 						
 						regexpUNIQUE=Integer.toString(unique++);
-						evaluateYear(fy, new ArrayList<>(), fm, 12, fd, 31, excMap);
-						String partial = result.getText();
-						ArrayList<Integer> years = new ArrayList<>();
+						
+						String partial = evaluateYear(fy, new ArrayList<Integer>(), fm, 12, fd, 31, excMap);
+						ArrayList<Integer> years = new ArrayList<Integer>();
 						for(i=fy+1;i<=ty-1;i++){
 							if(!excMap.containsKey(i))
 								if(bissextile(i))
@@ -184,32 +163,33 @@ public class Controller {
 							//System.out.println(i+" "+years.size()+" "+years.get(0));
 							else{
 								regexpUNIQUE=Integer.toString(unique++);
-								evaluateYear(i, new ArrayList<>(), 1, 12, 1, 31, excMap);
-								partial+="\n\n"+result.getText();
+								
+								partial+="\n\n"+evaluateYear(i, new ArrayList<Integer>(), 1, 12, 1, 31, excMap);
 							}
 							
 						}
 						if(!bissextile.isEmpty()){
 							regexpUNIQUE=Integer.toString(unique++);
-							evaluateYear(bissextile.remove(0), bissextile, 1, 12, 1, 31, excMap);
-							partial+="\n\n"+result.getText();
+							
+							partial+="\n\n"+evaluateYear(bissextile.remove(0), bissextile, 1, 12, 1, 31, excMap);
 						}
 						regexpUNIQUE=Integer.toString(unique++);
-						evaluateYear(years.remove(0), years, 1, 12, 1, 31, excMap);
-						partial+="\n\n"+result.getText();
+						
+						partial+="\n\n"+evaluateYear(years.remove(0), years, 1, 12, 1, 31, excMap);
 						regexpUNIQUE=Integer.toString(unique);
-						evaluateYear(ty, new ArrayList<>(), 1, tm, 1, td, excMap);
-						partial+="\n\n"+result.getText();
+						
+						partial+="\n\n"+evaluateYear(ty, new ArrayList<Integer>(), 1, tm, 1, td, excMap);
 						solution="date=";
 						for(i=1;i<=unique;i++)
 							solution += "{date"+i+"}|";
 						solution=solution.substring(0, solution.length()-1);
-						result.setText(partial+"\n\n"+solution);
+						result=partial+"\n\n"+solution;
 					}
 				}
 				
 			}
 		}
+		return result;
 		
     }
 	/*
@@ -220,19 +200,20 @@ public class Controller {
 	 *  tdd = to day
 	 *  HashMap = map containing exceptions
 	 */
-	private void evaluateYear(int year, ArrayList<Integer> yeararr, int fmm, int tmm, int fdd, int tdd, HashMap<Integer, HashMap<Integer,ArrayList<Integer>> > exc ){
+	private String evaluateYear(int year, ArrayList<Integer> yeararr, int fmm, int tmm, int fdd, int tdd, HashMap<Integer, HashMap<Integer,ArrayList<Integer>> > exc ) throws InterruptedException{
 		HashMap<Integer, ArrayList<Integer>> partials = new HashMap<>();
 		HashMap<Integer, String> excSol = new HashMap<>();
 		ArrayList<Integer> earr; //array to store temporary the exceptions for a month
+		String result="";
 		
 		int dim;
 		int i,j;
 		int tday,fday;
 		int cs; //0 even - 1 odd - >1 normal
 		
-		if(even.getValue().equals("normal"))
+		if(even.equals("normal"))
 			cs=2;
-		else if(even.getValue().equals("even"))
+		else if(even.equals("even"))
 			cs=0;
 		else 
 			cs=1;
@@ -274,11 +255,11 @@ public class Controller {
 				solution+="0"+eval(fdd, tdd, cs);
 				else 
 					solution+=eval(fdd, tdd, cs);
-			switch (format.getValue()) {
+			switch (format) {
 			case "YY/MM/DD":
-				if(yeararr.isEmpty())
-					result.setText("month_day"+regexpUNIQUE+"="+fmm+divisor+solution+"\ndate"+regexpUNIQUE+"="
-								+year+divisor+"{month_day"+regexpUNIQUE+"}");
+				if(yeararr.isEmpty())//MOD
+					result="month_day"+regexpUNIQUE+"="+fmm+divisor+solution+"\ndate"+regexpUNIQUE+"="
+								+year+divisor+"{month_day"+regexpUNIQUE+"}";
 				else{
 					String years=Integer.toString(year)+"|";
 					for(Integer y : yeararr){
@@ -286,13 +267,13 @@ public class Controller {
 							years+=y+"|";
 					}
 					years=years.substring(0, years.length()-1);
-					result.setText("month_day"+regexpUNIQUE+"="+fmm+divisor+solution+"\ndate"+regexpUNIQUE+"="
-							+years+divisor+"{month_day"+regexpUNIQUE+"}");
+					result="month_day"+regexpUNIQUE+"="+fmm+divisor+solution+"\ndate"+regexpUNIQUE+"="
+							+years+divisor+"{month_day"+regexpUNIQUE+"}";
 				}
 				break;
 				
-			case "DD/MM/YY":
-				result.setText("day_month"+regexpUNIQUE+"="+solution+divisor+fmm+"\ndate"+regexpUNIQUE+"="+"{day_month"+regexpUNIQUE+"}"+divisor+year);
+			case "DD/MM/YY"://MOD
+				result="day_month"+regexpUNIQUE+"="+solution+divisor+fmm+"\ndate"+regexpUNIQUE+"="+"{day_month"+regexpUNIQUE+"}"+divisor+year;
 				break;
 
 			default:
@@ -368,7 +349,7 @@ public class Controller {
 				}
 				else{
 					if(!partials.containsKey(tday))
-						partials.put(tday, new ArrayList<>());
+						partials.put(tday, new ArrayList<Integer>());
 					partials.get(tday).add(i);
 				}
 			}
@@ -381,7 +362,7 @@ public class Controller {
 					alreadyPresentDayRegExp.add(d);
 				}
 			}
-			switch (format.getValue()) {
+			switch (format) {
 			case "YY/MM/DD":
 				solution+="month_day"+regexpUNIQUE+"=";
 				for(Integer d : partials.keySet()){
@@ -447,15 +428,15 @@ public class Controller {
 			default:
 				break;
 			}
-			result.setText(solution);
+			result=solution;
 		}
 		
-		
+		return result;
 		
 	}
 	
-	private String eval(Integer from , Integer to , int cs){
-
+	private String eval(Integer from , Integer to , int cs) throws InterruptedException{
+		String result="ERR eval";
 		ProcessBuilder pb;
 		switch (cs) {
 		case 0://even
@@ -475,23 +456,31 @@ public class Controller {
 			
 			pb.directory(new File("./regexp"));
 			p = pb.start();
-			BufferedReader reader = 
-            new BufferedReader(new InputStreamReader(p.getInputStream()));
-			StringBuilder builder = new StringBuilder();
-			String line = null;
-			while ( (line = reader.readLine()) != null) {
-			   builder.append(line);
-			   //builder.append(System.getProperty("line.separator"));
-			}
-			String result = builder.toString();
-			return result.substring(2);
+//			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+//			StringBuilder builder = new StringBuilder();
+//			String line = null;
+//			while ( (line = reader.readLine()) != null) {
+//				System.out.print("line:"+line+"__");
+//			   builder.append(line);
+//			   //builder.append(System.getProperty("line.separator"));
+//			}
+//			String result = builder.toString();
+//			return result;
+			
+			IOThreadHandler outhandler = new IOThreadHandler(p.getInputStream());
+			outhandler.start();
+			p.waitFor();
+			result=outhandler.getOutput().toString();
+			result=result.substring(2);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
-		return "";
+		return result;
 		
 	}
+	
+	
 	
 	private boolean bissextile(int year){
 		if(year%100==0 && year%400!=0)
