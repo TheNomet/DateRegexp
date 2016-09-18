@@ -23,9 +23,9 @@ public class IOThreadHandler extends Thread {
 			String line = null;
 			while(br.hasNextLine()){
 				line=br.nextLine();
-				output.append(line+System.getProperty("line.separator"));
+				output.append(line);
 			}
-			
+			//System.out.println("output."+output+"_________");
 		} finally{
 			br.close();
 		}

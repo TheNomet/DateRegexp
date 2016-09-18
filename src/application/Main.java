@@ -90,15 +90,15 @@ public class Main {
 	                
                 System.out.println("CALCULATING\n\n");
                 
-                System.out.println(ctrl.Eval(from[0], from[1], from[2], to[0], to[1], to[2]));
+	            System.out.println(ctrl.Eval(from[0], from[1], from[2], to[0], to[1], to[2]));
+	               
            
 
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
+        }catch (InterruptedException e) {			
+			e.printStackTrace(); 
+        } finally {
             if (br != null) {
                 try {
                     br.close();
