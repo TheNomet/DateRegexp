@@ -23,7 +23,7 @@ public class Main {
 
          
 
-                System.out.print("Enter START date in the format 'Year month day' (SEPARATED by ' ': ");
+                System.out.print("Enter START date in the format 'Year month day' (SEPARATED by ' '): ");
                 String startDate = br.readLine();
                 from = startDate.split(" ");
                 if(from.length!=3){
@@ -31,7 +31,7 @@ public class Main {
                 	return;
                 }
 
-                System.out.print("Enter END date in the format 'Year month day' (SEPARATED by ' ': ");
+                System.out.print("Enter END date in the format 'Year month day' (SEPARATED by ' '): ");
                 String endDate = br.readLine();
                 to=endDate.split(" ");
                 if(from.length!=3){
@@ -39,7 +39,7 @@ public class Main {
                 	return;
                 }
 
-                System.out.println("Enter EXCEPTION dates in the format 'Year month day' (SEPARATED by ' '");
+                System.out.println("Enter EXCEPTION dates in the format 'Year month day' (SEPARATED by ' ')");
                 System.out.println("(enter 'q' when you have finish):");
                 String exc = br.readLine();
                 
