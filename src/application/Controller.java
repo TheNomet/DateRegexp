@@ -155,11 +155,12 @@ public class Controller {
 						String partial = evaluateYear(fy, new ArrayList<Integer>(), fm, 12, fd, 31, excMap);
 						ArrayList<Integer> years = new ArrayList<Integer>();
 						for(i=fy+1;i<=ty-1;i++){
-							if(!excMap.containsKey(i))
+							if(!excMap.containsKey(i)){
 								if(bissextile(i))
 									bissextile.add(i);
 								else
 									years.add(i);
+							}
 							//System.out.println(i+" "+years.size()+" "+years.get(0));
 							else{
 								regexpUNIQUE=Integer.toString(unique++);
@@ -168,16 +169,19 @@ public class Controller {
 							}
 							
 						}
+						//System.out.println(years);
+						//System.out.println(bissextile);
 						if(!bissextile.isEmpty()){
 							regexpUNIQUE=Integer.toString(unique++);
 							
 							partial+="\n\n"+evaluateYear(bissextile.remove(0), bissextile, 1, 12, 1, 31, excMap);
 						}
-						regexpUNIQUE=Integer.toString(unique++);
-						
-						partial+="\n\n"+evaluateYear(years.remove(0), years, 1, 12, 1, 31, excMap);
-						regexpUNIQUE=Integer.toString(unique);
-						
+						if(!years.isEmpty()){
+							regexpUNIQUE=Integer.toString(unique++);
+							
+							partial+="\n\n"+evaluateYear(years.remove(0), years, 1, 12, 1, 31, excMap);
+						}						
+						regexpUNIQUE=Integer.toString(unique);						
 						partial+="\n\n"+evaluateYear(ty, new ArrayList<Integer>(), 1, tm, 1, td, excMap);
 						solution="date=";
 						for(i=1;i<=unique;i++)
