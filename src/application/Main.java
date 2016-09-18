@@ -89,15 +89,20 @@ public class Main {
                 ctrl.setSeparator(br.readLine());	                
 	                
                 System.out.println("CALCULATING\n\n");
-                
-	            System.out.println(ctrl.Eval(from[0], from[1], from[2], to[0], to[1], to[2]));
+                while(true){
+                	try{
+                		System.out.println(ctrl.Eval(from[0], from[1], from[2], to[0], to[1], to[2]));
+                	} catch (IndexOutOfBoundsException e){
+                		System.out.println("Exception");
+                		continue;
+                	}
+                	finally {break;}
 	               
+                }
            
 
         } catch (IOException e) {
             e.printStackTrace();
-        }catch (InterruptedException e) {			
-			e.printStackTrace(); 
         } finally {
             if (br != null) {
                 try {
